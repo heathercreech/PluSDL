@@ -1,10 +1,5 @@
 #pragma once
 
-#include <iostream>
-#include <memory>
-
-#include <SDL2\SDL.h>
-
 #include "PluSDL.h"
 
 

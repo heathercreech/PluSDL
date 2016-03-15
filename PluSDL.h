@@ -11,6 +11,10 @@ typedef std::function<void()> SimpleFunction;
 typedef std::function<void(SDL_Event)> EventFunction;
 typedef Uint32 EventType;
 
+const int PLUSDL_DEFAULT_WINDOW_WIDTH = 640;
+const int PLUSDL_DEFAULT_WINDOW_HEIGHT = 480;
+const Uint32 PLUSDL_DEFAULT_FLAGS = SDL_WINDOW_SHOWN;
+
 //Controls initialization and destruction of SDL's subsystems
 class AppInitializer {
 public:
@@ -35,8 +39,7 @@ private:
 //Wrapper for SDL_Window
 class AppWindow {
 public:
-	AppWindow();
-	AppWindow(int, int);
+	AppWindow(int = PLUSDL_DEFAULT_WINDOW_WIDTH, int = PLUSDL_DEFAULT_WINDOW_HEIGHT, Uint32 = PLUSDL_DEFAULT_FLAGS);
 
 	~AppWindow();
 
@@ -45,6 +48,7 @@ public:
 	SDL_Window* get() { return window; };
 
 private:
+	void createWindow(int, int, Uint32); //simple wrapper for SDL_CreateWindow
 	SDL_Window* window;
 };
 
@@ -88,7 +92,7 @@ private:
 //Container for the elements of the most basic of graphics application
 class App {
 public:
-	static void init(int, int);
+	static void init(int = PLUSDL_DEFAULT_WINDOW_WIDTH, int = PLUSDL_DEFAULT_WINDOW_HEIGHT, Uint32 = PLUSDL_DEFAULT_FLAGS);
 	static App* instance();
 
 	AppInitializer& getInitializer() { return initializer; };
@@ -109,5 +113,5 @@ private:
 	AppEventManager event_manager;
 
 	static App* app_instance;
-	App(int, int);
+	App(int, int, Uint32);
 };

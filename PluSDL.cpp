@@ -36,13 +36,8 @@ AppInitializer::operator bool() const {
 }
 
 
-
-AppWindow::AppWindow() {
-	window = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_SHOWN);
-}
-
-AppWindow::AppWindow(int width, int height) {
-	window = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN);
+AppWindow::AppWindow(int width, int height, Uint32 flags) {
+	createWindow(width, height, flags);
 }
 
 AppWindow::~AppWindow() {
@@ -56,6 +51,9 @@ AppWindow::operator bool() const {
 	return false;
 }
 
+void AppWindow::createWindow(int width, int height, Uint32 flags) {
+	window = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, flags);
+}
 
 
 AppRenderer::AppRenderer(AppWindow &window) {
@@ -136,13 +134,13 @@ void AppEventManager::checkForEvent() {
 
 App *App::app_instance = 0;
 
-App::App(int width, int height) : initializer(), window(width, height), renderer(window), event_manager() {
+App::App(int width, int height, Uint32 flags) : initializer(), window(width, height, flags), renderer(window), event_manager(){
 	event_manager.registerSimpleFunction(SDL_QUIT, []() {App::instance()->stop();});
 }
 
-void App::init(int width, int height) {
+void App::init(int width, int height, Uint32 flags) {
 	if (!app_instance) {
-		app_instance = new App(width, height);
+		app_instance = new App(width, height, flags);
 	}
 }
 

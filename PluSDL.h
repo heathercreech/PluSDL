@@ -6,7 +6,6 @@
 
 #include <SDL2\SDL.h>
 
-
 typedef std::function<void()> SimpleFunction;
 typedef std::function<void(SDL_Event)> EventFunction;
 typedef Uint32 EventType;
@@ -14,7 +13,6 @@ typedef Uint32 EventType;
 const int PLUSDL_DEFAULT_WINDOW_WIDTH = 640;
 const int PLUSDL_DEFAULT_WINDOW_HEIGHT = 480;
 const Uint32 PLUSDL_DEFAULT_FLAGS = SDL_WINDOW_SHOWN;
-
 
 //Wrapper for SDL_Rect
 class AppRect {
@@ -42,16 +40,18 @@ private:
 class AppSurface {
 public:
 	AppSurface();
-	AppSurface(SDL_Surface* s) { surface = s; };
+	AppSurface(SDL_Surface* s) { this->set(s); };
+	AppSurface(int, int, int=32, Uint32=0, Uint32=0, Uint32=0, Uint32=0);
 	~AppSurface();
 
 	operator bool() const;
 	explicit operator SDL_Surface*() { return this->get(); };
 
 	SDL_Surface* get() { return surface; };
-	void set(SDL_Surface* s) { surface = s; };
+	void set(SDL_Surface* s);
 
 private:
+	void createSurface(int, int, int, Uint32, Uint32, Uint32, Uint32);
 	SDL_Surface* surface;
 };
 
@@ -92,7 +92,7 @@ public:
 	explicit operator SDL_Window*() { return this->get(); };
 
 	SDL_Window* get() { return window; };
-	SDL_Surface* getSurface() { return surface.get(); };
+	AppSurface getSurface() { return surface; };
 
 private:
 	void createWindow(int, int, Uint32); //simple wrapper for SDL_CreateWindow

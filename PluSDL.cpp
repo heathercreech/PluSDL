@@ -23,8 +23,35 @@ AppSurface::AppSurface() {
 	surface = NULL;
 }
 
+AppSurface::AppSurface(int width, int height, int depth, Uint32 rmask, Uint32 gmask, Uint32 bmask, Uint32 amask) {
+	createSurface(width, height, depth, rmask, gmask, bmask, amask);
+}
+
 AppSurface::~AppSurface() {
 	SDL_FreeSurface(surface);
+}
+
+AppSurface::operator bool() const {
+	if (surface != NULL) {
+		return true;
+	}
+	return false;
+}
+
+void AppSurface::set(SDL_Surface* s) {
+	if (s == NULL) {
+		printf("Attempted to assign NULL surface to AppSurface\n");
+	}
+	else {
+		surface = s;
+	}
+}
+
+void AppSurface::createSurface(int width, int height, int depth, Uint32 rmask, Uint32 gmask, Uint32 bmask, Uint32 amask) {
+	surface = SDL_CreateRGBSurface(0, width, height, depth, rmask, gmask, bmask, amask);
+	if (surface == NULL) {
+		printf("SDL_CreateRGBSurface failed: %s\n", SDL_GetError());
+	}
 }
 
 

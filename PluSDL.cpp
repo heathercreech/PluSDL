@@ -1,6 +1,33 @@
 #include "PluSDL.h"
 
 
+AppRect::AppRect(int w, int h, int x, int y) {
+	rect.w = w;
+	rect.h = h;
+	rect.x = x;
+	rect.y = y;
+}
+
+void AppRect::resize(int w, int h) {
+	rect.w = w;
+	rect.h = h;
+}
+
+void AppRect::updatePosition(int x, int y) {
+	rect.x = x;
+	rect.y = y;
+}
+
+
+AppSurface::AppSurface() {
+	surface = NULL;
+}
+
+AppSurface::~AppSurface() {
+	SDL_FreeSurface(surface);
+}
+
+
 AppInitializer::AppInitializer() {
 	initializeVideo();
 }
@@ -36,8 +63,9 @@ AppInitializer::operator bool() const {
 }
 
 
-AppWindow::AppWindow(int width, int height, Uint32 flags) {
+AppWindow::AppWindow(int width, int height, Uint32 flags) : surface(){
 	createWindow(width, height, flags);
+	surface.set(SDL_GetWindowSurface(this->get()));
 }
 
 AppWindow::~AppWindow() {
@@ -131,7 +159,6 @@ void AppEventManager::checkForEvent() {
 }
 
 
-
 App *App::app_instance = 0;
 
 App::App(int width, int height, Uint32 flags) : initializer(), window(width, height, flags), renderer(window), event_manager(){
@@ -149,7 +176,7 @@ App* App::instance(){
 		return app_instance;
 	}
 	else {
-		printf("App not initialized, call App::init(int, int)\n");
+		printf("App not initialized, call App::init(int, int, Uint32)\n");
 		return NULL;
 	}
 }

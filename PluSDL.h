@@ -15,6 +15,51 @@ const int PLUSDL_DEFAULT_WINDOW_WIDTH = 640;
 const int PLUSDL_DEFAULT_WINDOW_HEIGHT = 480;
 const Uint32 PLUSDL_DEFAULT_FLAGS = SDL_WINDOW_SHOWN;
 
+
+//Wrapper for SDL_Rect
+class AppRect {
+public:
+	AppRect(int, int, int = 0, int = 0);
+
+	void resize(int, int);
+	void updatePosition(int, int);
+
+	int getX() { return rect.x; };
+	int getY() { return rect.y; };
+
+	int getWidth() { return rect.w; };
+	int getHeight() { return rect.h; };
+
+	explicit operator SDL_Rect*() { return this->get(); };
+
+	SDL_Rect* get() { return &rect; };
+
+private:
+	SDL_Rect rect;
+};
+
+//Wrapper for SDL_Surface
+class AppSurface {
+public:
+	AppSurface();
+	AppSurface(SDL_Surface* s) { surface = s; };
+	~AppSurface();
+
+	operator bool() const;
+	explicit operator SDL_Surface*() { return this->get(); };
+
+	SDL_Surface* get() { return surface; };
+	void set(SDL_Surface* s) { surface = s; };
+
+private:
+	SDL_Surface* surface;
+};
+
+//Wrapper for SDL_Texture
+class AppTexture {
+
+};
+
 //Controls initialization and destruction of SDL's subsystems
 class AppInitializer {
 public:
@@ -44,12 +89,15 @@ public:
 	~AppWindow();
 
 	operator bool() const;
+	explicit operator SDL_Window*() { return this->get(); };
 
 	SDL_Window* get() { return window; };
+	SDL_Surface* getSurface() { return surface.get(); };
 
 private:
 	void createWindow(int, int, Uint32); //simple wrapper for SDL_CreateWindow
 	SDL_Window* window;
+	AppSurface surface;
 };
 
 //Wrapper for SDL_Renderer
@@ -60,6 +108,7 @@ public:
 	~AppRenderer();
 
 	operator bool() const;
+	explicit operator SDL_Renderer*() { return this->get(); };
 
 	SDL_Renderer* get() { return renderer; };
 

@@ -32,10 +32,10 @@ AppSurface::~AppSurface() {
 }
 
 AppSurface::operator bool() const {
-	if (surface != NULL) {
-		return true;
+	if (surface == NULL) {
+		return false;
 	}
-	return false;
+	return true;
 }
 
 void AppSurface::set(SDL_Surface* s) {
@@ -52,6 +52,33 @@ void AppSurface::createSurface(int width, int height, int depth, Uint32 rmask, U
 	if (surface == NULL) {
 		printf("SDL_CreateRGBSurface failed: %s\n", SDL_GetError());
 	}
+}
+
+
+AppTexture::AppTexture(std::string filepath) {
+	loadFromFile(filepath);
+}
+
+void AppTexture::loadFromFile(std::string filepath) {
+	AppSurface img_surface(IMG_Load(filepath.c_str()));
+	if (img_surface) {
+		texture = SDL_CreateTextureFromSurface(
+			static_cast<SDL_Renderer*>(App::instance()->getRenderer()),
+			static_cast<SDL_Surface*>(img_surface));
+		if (texture == NULL) {
+			printf("Cannot create AppTexture from %s\nSDL Error: %s\n", filepath.c_str(), SDL_GetError());
+		}
+	}
+	else {
+		printf("Unable to load image from %s\nSDL Error: %s\n", filepath.c_str(), IMG_GetError());
+	}
+}
+
+AppTexture::operator bool() const {
+	if (texture == NULL) {
+		return false;
+	}
+	return true;
 }
 
 
@@ -108,11 +135,14 @@ AppWindow::operator bool() const {
 
 void AppWindow::createWindow(int width, int height, Uint32 flags) {
 	window = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, flags);
+	if (window == NULL) {
+		printf("SDL_CreateWindow failed: %s\n", SDL_GetError());
+	}
 }
 
 
 AppRenderer::AppRenderer(AppWindow &window) {
-	renderer = SDL_CreateRenderer(window.get(), -1, SDL_RENDERER_ACCELERATED);
+	renderer = SDL_CreateRenderer(static_cast<SDL_Window*>(window), -1, SDL_RENDERER_ACCELERATED);
 }
 
 AppRenderer::~AppRenderer() {
@@ -131,9 +161,12 @@ void AppRenderer::clear() {
 }
 
 void AppRenderer::update() {
-	SDL_RenderPresent(get());
+	SDL_RenderPresent(this->get());
 }
 
+void AppRenderer::copy(SDL_Texture* texture, SDL_Rect* rect) {
+	SDL_RenderCopy(renderer, texture, NULL, rect);
+}
 
 
 AppEventManager::AppEventManager() {

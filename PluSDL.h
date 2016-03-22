@@ -5,6 +5,7 @@
 #include <functional>
 
 #include <SDL2\SDL.h>
+#include <SDL2\SDL_image.h>
 
 typedef std::function<void()> SimpleFunction;
 typedef std::function<void(SDL_Event)> EventFunction;
@@ -41,7 +42,7 @@ class AppSurface {
 public:
 	AppSurface();
 	AppSurface(SDL_Surface* s) { this->set(s); };
-	AppSurface(int, int, int=32, Uint32=0, Uint32=0, Uint32=0, Uint32=0);
+	AppSurface(int, int, int = 32, Uint32 = 0, Uint32 = 0, Uint32 = 0, Uint32 = 0);
 	~AppSurface();
 
 	operator bool() const;
@@ -57,7 +58,18 @@ private:
 
 //Wrapper for SDL_Texture
 class AppTexture {
+public:
+	AppTexture(std::string);
+	~AppTexture() { SDL_DestroyTexture(texture); };
+	
+	operator bool() const;
+	explicit operator SDL_Texture*() { return this->get(); };
 
+	SDL_Texture* get() { return texture; };
+
+private:
+	void loadFromFile(std::string);
+	SDL_Texture* texture;
 };
 
 //Controls initialization and destruction of SDL's subsystems
@@ -114,6 +126,8 @@ public:
 
 	void clear();
 	void update();
+
+	void copy(SDL_Texture*, SDL_Rect* = NULL);
 
 private:
 	SDL_Renderer* renderer;

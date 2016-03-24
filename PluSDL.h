@@ -7,6 +7,8 @@
 #include <SDL2\SDL.h>
 #include <SDL2\SDL_image.h>
 
+#include "refc.hpp"
+
 typedef std::function<void()> SimpleFunction;
 typedef std::function<void(SDL_Event)> EventFunction;
 typedef Uint32 EventType;
@@ -14,6 +16,7 @@ typedef Uint32 EventType;
 const int PLUSDL_DEFAULT_WINDOW_WIDTH = 640;
 const int PLUSDL_DEFAULT_WINDOW_HEIGHT = 480;
 const Uint32 PLUSDL_DEFAULT_FLAGS = SDL_WINDOW_SHOWN;
+
 
 //Wrapper for SDL_Rect
 class AppRect {
@@ -40,36 +43,33 @@ private:
 //Wrapper for SDL_Surface
 class AppSurface {
 public:
-	AppSurface();
-	AppSurface(SDL_Surface* s) { this->set(s); };
+	AppSurface(SDL_Window*);
+	AppSurface(std::string); //IMG_Load constructor
 	AppSurface(int, int, int = 32, Uint32 = 0, Uint32 = 0, Uint32 = 0, Uint32 = 0);
-	~AppSurface();
+	~AppSurface() {};
 
-	operator bool() const;
+	operator bool();
 	explicit operator SDL_Surface*() { return this->get(); };
 
 	SDL_Surface* get() { return surface; };
-	void set(SDL_Surface* s);
 
 private:
-	void createSurface(int, int, int, Uint32, Uint32, Uint32, Uint32);
-	SDL_Surface* surface;
+	ReferenceCounter<SDL_Surface>::Pointer surface;
 };
 
 //Wrapper for SDL_Texture
 class AppTexture {
 public:
 	AppTexture(std::string);
-	~AppTexture() { SDL_DestroyTexture(texture); };
+	~AppTexture() {};
 	
-	operator bool() const;
+	operator bool();
 	explicit operator SDL_Texture*() { return this->get(); };
 
 	SDL_Texture* get() { return texture; };
 
 private:
-	void loadFromFile(std::string);
-	SDL_Texture* texture;
+	ReferenceCounter<SDL_Texture>::Pointer texture;
 };
 
 //Controls initialization and destruction of SDL's subsystems
@@ -100,15 +100,14 @@ public:
 
 	~AppWindow();
 
-	operator bool() const;
+	operator bool();
 	explicit operator SDL_Window*() { return this->get(); };
 
 	SDL_Window* get() { return window; };
 	AppSurface getSurface() { return surface; };
 
 private:
-	void createWindow(int, int, Uint32); //simple wrapper for SDL_CreateWindow
-	SDL_Window* window;
+	ReferenceCounter<SDL_Window>::Pointer window;
 	AppSurface surface;
 };
 
@@ -119,10 +118,10 @@ public:
 
 	~AppRenderer();
 
-	operator bool() const;
+	operator bool();
 	explicit operator SDL_Renderer*() { return this->get(); };
 
-	SDL_Renderer* get() { return renderer; };
+	ReferenceCounter<SDL_Renderer>::Pointer get() { return renderer; };
 
 	void clear();
 	void update();
@@ -130,7 +129,7 @@ public:
 	void copy(SDL_Texture*, SDL_Rect* = NULL);
 
 private:
-	SDL_Renderer* renderer;
+	ReferenceCounter<SDL_Renderer>::Pointer renderer;
 };
 
 //Handles calling of functions in response to SDLs events

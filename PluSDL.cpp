@@ -19,66 +19,39 @@ void AppRect::updatePosition(int x, int y) {
 }
 
 
-AppSurface::AppSurface() {
-	surface = NULL;
-}
+AppSurface::AppSurface(int width, int height, int depth, Uint32 rmask, Uint32 gmask, Uint32 bmask, Uint32 amask) : 
+	surface(ReferenceCounter<SDL_Surface>::create(
+		SDL_CreateRGBSurface(0, width, height, depth, rmask, gmask, bmask, amask),
+		SDL_FreeSurface))
+{}
 
-AppSurface::AppSurface(int width, int height, int depth, Uint32 rmask, Uint32 gmask, Uint32 bmask, Uint32 amask) {
-	createSurface(width, height, depth, rmask, gmask, bmask, amask);
-}
+AppSurface::AppSurface(SDL_Window* w) : 
+	surface(ReferenceCounter<SDL_Surface>::create(SDL_GetWindowSurface(w), SDL_FreeSurface))
+{}
 
-AppSurface::~AppSurface() {
-	SDL_FreeSurface(surface);
-}
+AppSurface::AppSurface(std::string filepath) :
+	surface(ReferenceCounter<SDL_Surface>::create(IMG_Load(filepath.c_str()), SDL_FreeSurface))
+{}
 
-AppSurface::operator bool() const {
-	if (surface == NULL) {
-		return false;
+AppSurface::operator bool(){
+	if (surface.good()) {
+		return true;
 	}
-	return true;
-}
-
-void AppSurface::set(SDL_Surface* s) {
-	if (s == NULL) {
-		printf("Attempted to assign NULL surface to AppSurface\n");
-	}
-	else {
-		surface = s;
-	}
-}
-
-void AppSurface::createSurface(int width, int height, int depth, Uint32 rmask, Uint32 gmask, Uint32 bmask, Uint32 amask) {
-	surface = SDL_CreateRGBSurface(0, width, height, depth, rmask, gmask, bmask, amask);
-	if (surface == NULL) {
-		printf("SDL_CreateRGBSurface failed: %s\n", SDL_GetError());
-	}
+	return false;
 }
 
 
-AppTexture::AppTexture(std::string filepath) {
-	loadFromFile(filepath);
-}
+AppTexture::AppTexture(std::string filepath) : 
+	texture(ReferenceCounter<SDL_Texture>::create(
+		SDL_CreateTextureFromSurface(static_cast<SDL_Renderer*>(App::instance()->getRenderer()), static_cast<SDL_Surface*>(AppSurface(filepath))), 
+		SDL_DestroyTexture))
+{}
 
-void AppTexture::loadFromFile(std::string filepath) {
-	AppSurface img_surface(IMG_Load(filepath.c_str()));
-	if (img_surface) {
-		texture = SDL_CreateTextureFromSurface(
-			static_cast<SDL_Renderer*>(App::instance()->getRenderer()),
-			static_cast<SDL_Surface*>(img_surface));
-		if (texture == NULL) {
-			printf("Cannot create AppTexture from %s\nSDL Error: %s\n", filepath.c_str(), SDL_GetError());
-		}
+AppTexture::operator bool(){
+	if (texture.good()) {
+		return true;
 	}
-	else {
-		printf("Unable to load image from %s\nSDL Error: %s\n", filepath.c_str(), IMG_GetError());
-	}
-}
-
-AppTexture::operator bool() const {
-	if (texture == NULL) {
-		return false;
-	}
-	return true;
+	return false;
 }
 
 
@@ -117,47 +90,41 @@ AppInitializer::operator bool() const {
 }
 
 
-AppWindow::AppWindow(int width, int height, Uint32 flags) : surface(){
-	createWindow(width, height, flags);
-	surface.set(SDL_GetWindowSurface(this->get()));
-}
+AppWindow::AppWindow(int width, int height, Uint32 flags) : 
+	window(ReferenceCounter<SDL_Window>::create(
+		SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, flags),
+		SDL_DestroyWindow
+		)),
+	surface(window)
+{}
 
-AppWindow::~AppWindow() {
-	SDL_DestroyWindow(window);
-}
+AppWindow::~AppWindow() {}
 
-AppWindow::operator bool() const {
-	if (window != NULL) {
+AppWindow::operator bool() {
+	if (window.good()) {
 		return true;
 	}
 	return false;
 }
 
-void AppWindow::createWindow(int width, int height, Uint32 flags) {
-	window = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, flags);
-	if (window == NULL) {
-		printf("SDL_CreateWindow failed: %s\n", SDL_GetError());
-	}
-}
 
+AppRenderer::AppRenderer(AppWindow &window) : 
+	renderer(ReferenceCounter<SDL_Renderer>::create(
+		SDL_CreateRenderer(static_cast<SDL_Window*>(window), -1, SDL_RENDERER_ACCELERATED), SDL_DestroyRenderer)
+		)
+{}
 
-AppRenderer::AppRenderer(AppWindow &window) {
-	renderer = SDL_CreateRenderer(static_cast<SDL_Window*>(window), -1, SDL_RENDERER_ACCELERATED);
-}
+AppRenderer::~AppRenderer() {}
 
-AppRenderer::~AppRenderer() {
-	SDL_DestroyRenderer(renderer);
-}
-
-AppRenderer::operator bool() const {
-	if (renderer != NULL) {
+AppRenderer::operator bool() {
+	if (renderer.good()) {
 		return true;
 	}
 	return false;
 }
 
 void AppRenderer::clear() {
-	SDL_RenderClear(get());
+	SDL_RenderClear(this->get());
 }
 
 void AppRenderer::update() {
@@ -165,7 +132,7 @@ void AppRenderer::update() {
 }
 
 void AppRenderer::copy(SDL_Texture* texture, SDL_Rect* rect) {
-	SDL_RenderCopy(renderer, texture, NULL, rect);
+	SDL_RenderCopy(this->get(), texture, NULL, rect);
 }
 
 

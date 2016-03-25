@@ -90,15 +90,16 @@ AppInitializer::operator bool() const {
 }
 
 
-AppWindow::AppWindow(int width, int height, Uint32 flags) : 
+AppWindow::AppWindow(int w, int h, Uint32 flags) : 
 	window(ReferenceCounter<SDL_Window>::create(
-		SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, flags),
+		SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w, h, flags),
 		SDL_DestroyWindow
 		)),
 	surface(window)
-{}
-
-AppWindow::~AppWindow() {}
+{
+	width = w;
+	height = h;
+}
 
 AppWindow::operator bool() {
 	if (window.good()) {
@@ -113,8 +114,6 @@ AppRenderer::AppRenderer(AppWindow &window) :
 		SDL_CreateRenderer(static_cast<SDL_Window*>(window), -1, SDL_RENDERER_ACCELERATED), SDL_DestroyRenderer)
 		)
 {}
-
-AppRenderer::~AppRenderer() {}
 
 AppRenderer::operator bool() {
 	if (renderer.good()) {
@@ -138,9 +137,6 @@ void AppRenderer::copy(SDL_Texture* texture, SDL_Rect* rect) {
 
 AppEventManager::AppEventManager() {
 	default_function = [](SDL_Event) {};
-}
-
-AppEventManager::~AppEventManager() {
 }
 
 bool AppEventManager::isHandled(EventType etype) {
@@ -190,6 +186,7 @@ App *App::app_instance = 0;
 
 App::App(int width, int height, Uint32 flags) : initializer(), window(width, height, flags), renderer(window), event_manager(){
 	event_manager.registerSimpleFunction(SDL_QUIT, []() {App::instance()->stop();});
+	event_manager.registerEventFunction(SDL_WINDOWEVENT, [](SDL_Event e) {if (e.window.event == SDL_WINDOWEVENT_RESIZED) { App::instance()->getWindow().updateDimensions(e.window.data1, e.window.data2); }});
 }
 
 void App::init(int width, int height, Uint32 flags) {

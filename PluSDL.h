@@ -46,7 +46,6 @@ public:
 	AppSurface(SDL_Window*);
 	AppSurface(std::string); //IMG_Load constructor
 	AppSurface(int, int, int = 32, Uint32 = 0, Uint32 = 0, Uint32 = 0, Uint32 = 0);
-	~AppSurface() {};
 
 	operator bool();
 	explicit operator SDL_Surface*() { return this->get(); };
@@ -61,7 +60,6 @@ private:
 class AppTexture {
 public:
 	AppTexture(std::string);
-	~AppTexture() {};
 	
 	operator bool();
 	explicit operator SDL_Texture*() { return this->get(); };
@@ -98,15 +96,20 @@ class AppWindow {
 public:
 	AppWindow(int = PLUSDL_DEFAULT_WINDOW_WIDTH, int = PLUSDL_DEFAULT_WINDOW_HEIGHT, Uint32 = PLUSDL_DEFAULT_FLAGS);
 
-	~AppWindow();
-
 	operator bool();
 	explicit operator SDL_Window*() { return this->get(); };
 
 	SDL_Window* get() { return window; };
 	AppSurface getSurface() { return surface; };
 
+	int getWidth() { return width; };
+	int getHeight() { return height; };
+
+	void updateDimensions(int w, int h) { width = w; height = h; };
+
 private:
+	int width, height;
+
 	ReferenceCounter<SDL_Window>::Pointer window;
 	AppSurface surface;
 };
@@ -115,8 +118,6 @@ private:
 class AppRenderer {
 public:
 	AppRenderer(AppWindow&);
-
-	~AppRenderer();
 
 	operator bool();
 	explicit operator SDL_Renderer*() { return this->get(); };
@@ -136,7 +137,6 @@ private:
 class AppEventManager {
 public:
 	AppEventManager();
-	~AppEventManager();
 
 	void registerEventFunction(EventType, EventFunction);
 	void registerSimpleFunction(EventType, SimpleFunction);
